@@ -32,41 +32,35 @@ app.message('hello', async ({ message, say }) => {
 });
 
 //Listens to 'users list' and will print users list
-app.message('users list', async({ message, say }) => {    
-    await say(`I tried to get users: ${message.usersStore}`);    
+app.message('users list', async({ message, say }) => {  
+  const users = await fetchUsers();  
+  say(`I tried to get users: ${users}`);        
 });
 
-let usersStore = {};
 // Fetch users using the users.list method
 async function fetchUsers() {
   try {
-    // Call the users.list method using the built-in WebClient
-    const result = await app.client.users.list({
+    let usersStore = [];
+    //Call the users.list method using the built-in WebClient
+    const results = await app.client.users.list({
       // The token you used to initialize your app
       token: process.env.SLACK_BOT_TOKEN
     });
-    saveUsers(result.members);
+    
+    const userList = results.members;
+    
+    //fields to get from user object
+    for (let user of userList) {
+      //console.log(`Name: ${user.real_name}`);
+      usersStore.push(user.real_name);
+    }
+    return usersStore;
+   
   }
   catch (error) {
     console.error(error);
   }
 }
-
-// Put users into the JavaScript object
-function saveUsers(usersArray) {
-  
-  let userId = '';
-  usersArray.forEach(function(user){
-    // Key user info on their unique user ID
-    userId = user["id"];
-    
-    // Store the entire user object (you may not need all of the info)
-    usersStore[userId] = user;
-    //console.log(usersStore);
-  });
-}
-fetchUsers();
-
 
 
 (async () => {
