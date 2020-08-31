@@ -49,13 +49,38 @@ async function fetchUsers() {
     
     const userList = results.members;
     
-    //fields to get from user object
+    //Output list of user names
     for (let user of userList) {
-      //console.log(`Name: ${user.real_name}`);
       usersStore.push(user.real_name);
     }
     return usersStore;
    
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
+//if invoked, will print text(in markdown format) to the specified channel
+async function printMd() {
+  try {
+    // Call the chat.postMessage method using the built-in WebClient
+    const result = await app.client.chat.postMessage({
+      token: process.env.SLACK_BOT_TOKEN,
+      channel: process.env.SLACK_CHANNEL_ID,
+      blocks: 
+        [{
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*Hello!* Welcome to Hack for LA, checkout our projects here: <hackforla.org |HackForLA.org>. \n What projects or skills are you interested in working on?"
+            }
+        }]
+
+    });
+
+    // Print result, which includes information about the message (like TS)
+    console.log(result);
   }
   catch (error) {
     console.error(error);
