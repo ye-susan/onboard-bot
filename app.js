@@ -10,26 +10,6 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET
 });
 
-// All the room in the world for your code
-app.event('team_join', async ({ event, context }) => {
-  try {
-    const result = await app.client.chat.postMessage({
-      token: context.botToken,
-      channel: welcomeChannelId,
-      text: `Welcome to the team, <@${event.user.id}>! 🎉 You can introduce yourself in this channel.`
-    });
-    console.log(result);
-  }
-  catch (error) {
-    console.error(error);
-  }
-});
-
-// Listens to incoming messages that contain "hello"
-app.message('hello', async ({ message, say }) => {
-    // say() sends a message to the channel where the event was triggered
-    await say(`Hey there <@${message.user}>!`);
-});
 
 //Listens to 'users list' and will print users list
 app.message('users list', async({ message, say }) => {  
@@ -61,26 +41,49 @@ async function fetchUsers() {
   }
 }
 
-//if invoked, will print text(in markdown format) to the specified channel
-async function printMd() {
+//trigger message with 'read txt' command, will print the specified md file
+//will need to replace hardcode file name with  variable
+app.message('read txt', async({ message, say }) => {  
+  let text = ''
+  fs.readFile('./1newMember.md','utf8', function (err,data) {
+    if (err) {
+      return console.log(err);
+    }
+    text = data;
+    console.log(data);
+    console.log(text);
+    say(`The text says: ${text}`);        
+  });  
+});
+
+//based on user ID, will send user a DM from the bot with a message
+async function botDmChat() {
   try {
-    // Call the chat.postMessage method using the built-in WebClient
+    
+    //using conversations.open to find user's conversation object
+    const userConversations = await app.client.conversations.open({
+      token: process.env.SLACK_BOT_TOKEN,
+      users: process.env.USER_ID
+    });
+    
+    //extracting user's DM id from conversation object
+    let userDmId = userConversations.channel.id;
+    
+    //grabbing user's name from user object api
+    let userObj = await app.client.users.info({
+      token: process.env.SLACK_BOT_TOKEN,
+      users: process.env.USER_ID
+    });
+    let userName = userObj.users[0].real_name;
+    
+    //using user userDmId to send message to user
     const result = await app.client.chat.postMessage({
       token: process.env.SLACK_BOT_TOKEN,
-      channel: process.env.SLACK_CHANNEL_ID,
-      blocks: 
-        [{
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": "*Hello!* Welcome to Hack for LA, checkout our projects here: <hackforla.org |HackForLA.org>. \n What projects or skills are you interested in working on?"
-            }
-        }]
-
+      channel: userDmId,
+      text: `Hi ${userName}! This is the testbot speaking~`
     });
-
-    // Print result, which includes information about the message (like TS)
     console.log(result);
+    
   }
   catch (error) {
     console.error(error);
