@@ -43,16 +43,13 @@ async function fetchUsers() {
 
 //trigger message with 'read txt' command, will print the specified md file
 //will need to replace hardcode file name with  variable
+//Listens to 'read txt' and will print txt file
 app.message('read txt', async({ message, say }) => {  
-  let text = ''
   fs.readFile('./1newMember.md','utf8', function (err,data) {
     if (err) {
       return console.log(err);
     }
-    text = data;
-    console.log(data);
-    console.log(text);
-    say(`The text says: ${text}`);        
+    say(`The text says: ${data}`);        
   });  
 });
 
@@ -75,21 +72,20 @@ async function botDmChat() {
       users: process.env.USER_ID
     });
     let userName = userObj.users[0].real_name;
-    
+    let textData=`*Hello* ${userName}!`;
+
     //using user userDmId to send message to user
-    const result = await app.client.chat.postMessage({
+    const sendUserMsgObj = await app.client.chat.postMessage({
       token: process.env.SLACK_BOT_TOKEN,
       channel: userDmId,
-      text: `Hi ${userName}! This is the testbot speaking~`
+      mrkdown: true,
+      text: textData
     });
-    console.log(result);
-    
   }
   catch (error) {
     console.error(error);
   }
 }
-
 
 (async () => {
     // Start your app
