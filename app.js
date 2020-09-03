@@ -71,6 +71,7 @@ async function botDmChat() {
   try {
     
     //using conversations.open to find user's conversation object
+    //TO DO: MAKE USER_ID DYNAMIC BASED ON DATABASE INFO/FUNCTION TO QUERY WHO TO MESSAGE
     const userConversations = await app.client.conversations.open({
       token: process.env.SLACK_BOT_TOKEN,
       users: process.env.USER_ID
@@ -85,7 +86,8 @@ async function botDmChat() {
       users: process.env.USER_ID
     });
     let userName = userObj.users[0].real_name;
-    let textData=`*Hello* ${userName}!`;
+    let fileName = './1newMember.md'
+    let textData = fs.readFileSync(fileName,'utf8');
 
     //using user userDmId to send message to user
     const sendUserMsgObj = await app.client.chat.postMessage({
@@ -100,6 +102,10 @@ async function botDmChat() {
   }
 }
 
+
+
+//----------------------------------------------------------
+
 (async () => {
     // Start your app
     await app.start(process.env.PORT || 3000);
@@ -107,7 +113,5 @@ async function botDmChat() {
     console.log('⚡️ Bolt app is running!');
 })();
 
-//Bolt uses the /slack/events endpoint to listen to all incoming requests (whether shortcuts, events, or interactivity payloads). When configuring endpoints within your app configuration, you’ll append /slack/events to all request URLs.
-//
 
 module.exports = router;
