@@ -41,17 +41,30 @@ async function fetchUsers() {
   }
 }
 
-//trigger message with 'read txt' command, will print the specified md file
-//will need to replace hardcode file name with  variable
-//Listens to 'read txt' and will print txt file
-app.message('read txt', async({ message, say }) => {  
-  fs.readFile('./1newMember.md','utf8', function (err,data) {
-    if (err) {
-      return console.log(err);
+//----------------------------------------------------------
+//function to return list of users who are less than 30days new to HFLA
+function findNewUsers() {
+  let newUserList = [];
+  for (let id in db) {
+    if(checkStartDate(db[id]) <= 30) {
+      newUserList.push(db[id]);
     }
-    say(`The text says: ${data}`);        
-  });  
-});
+  }
+  return newUserList;  
+}
+
+//function to check how long a user has been with the org (according to the date they created their VRMS account)
+function checkStartDate(user) {
+  let userStartDate = user.createdDate;
+  let userStartparsed = Date.parse(userStartDate);
+  
+  let dateNow = new Date();
+  let diff = dateNow - userStartparsed;
+  let diffDays = diff/1000/60/60/24;
+  
+  return diffDays;
+}
+
 
 //based on user ID, will send user a DM from the bot with a message
 async function botDmChat() {
